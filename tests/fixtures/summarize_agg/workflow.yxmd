@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<AlteryxDocument yxmdVer="2023.1">
+  <Nodes>
+    <Node ToolID="1">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.DbFileInput.DbFileInput" />
+      <Properties>
+        <Configuration><File FileFormat="25">inputs\sales.csv</File></Configuration>
+      </Properties>
+    </Node>
+    <Node ToolID="2">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.Summarize.Summarize" />
+      <Properties>
+        <Configuration>
+          <SummarizeFields>
+            <SummarizeField field="Customer" action="GroupBy" rename="Customer" />
+            <SummarizeField field="Amount" action="Sum" rename="Total" />
+            <SummarizeField field="Amount" action="Count" rename="NumOrders" />
+            <SummarizeField field="Amount" action="Avg" rename="AvgAmount" />
+            <SummarizeField field="Amount" action="Min" rename="MinAmount" />
+            <SummarizeField field="Item" action="CountDistinct" rename="DistinctItems" />
+            <SummarizeField field="Item" action="Concat" rename="Items">
+              <SummarizeField_Concat_Separator value="," />
+            </SummarizeField>
+          </SummarizeFields>
+        </Configuration>
+        <Annotation><AnnotationText>Null customers form their own group</AnnotationText></Annotation>
+      </Properties>
+    </Node>
+    <Node ToolID="3">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.DbFileOutput.DbFileOutput" />
+      <Properties>
+        <Configuration><File FileFormat="0">by_customer.csv</File></Configuration>
+      </Properties>
+    </Node>
+  </Nodes>
+  <Connections>
+    <Connection>
+      <Origin ToolID="1" Connection="Output" />
+      <Destination ToolID="2" Connection="Input" />
+    </Connection>
+    <Connection>
+      <Origin ToolID="2" Connection="Output" />
+      <Destination ToolID="3" Connection="Input" />
+    </Connection>
+  </Connections>
+</AlteryxDocument>

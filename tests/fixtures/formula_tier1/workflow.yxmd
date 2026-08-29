@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<AlteryxDocument yxmdVer="2023.1">
+  <Nodes>
+    <Node ToolID="1">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.DbFileInput.DbFileInput" />
+      <Properties>
+        <Configuration><File FileFormat="25">inputs\people.csv</File></Configuration>
+      </Properties>
+    </Node>
+    <Node ToolID="2">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.Formula.Formula" />
+      <Properties>
+        <Configuration>
+          <FormulaFields>
+            <FormulaField expression="IF [Score] &gt;= 90 THEN 'A' ELSEIF [Score] &gt;= 75 THEN 'B' ELSE 'C' ENDIF" field="Grade" type="V_WString" size="1" />
+            <FormulaField expression="Uppercase(Trim([Name]))" field="NameUpper" type="V_WString" size="254" />
+            <FormulaField expression="[Score] + [Bonus]" field="Total" type="Double" size="8" />
+            <FormulaField expression="IIF([Total] &gt; 100, 1, 0)" field="FlagBig" type="Byte" size="1" />
+            <FormulaField expression="SomeUnknownFunc([Score])" field="Broken" type="Double" size="8" />
+          </FormulaFields>
+        </Configuration>
+        <Annotation><AnnotationText>FlagBig reads Total, made two lines up</AnnotationText></Annotation>
+      </Properties>
+    </Node>
+    <Node ToolID="3">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.Filter.Filter" />
+      <Properties>
+        <Configuration>
+          <Expression>[Total] &gt; 100 AND Contains([Name], 'a')</Expression>
+          <Mode>Custom</Mode>
+        </Configuration>
+      </Properties>
+    </Node>
+    <Node ToolID="4">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.DbFileOutput.DbFileOutput" />
+      <Properties>
+        <Configuration><File FileFormat="0">big_spenders.csv</File></Configuration>
+      </Properties>
+    </Node>
+    <Node ToolID="5">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.DbFileOutput.DbFileOutput" />
+      <Properties>
+        <Configuration><File FileFormat="0">others.csv</File></Configuration>
+      </Properties>
+    </Node>
+  </Nodes>
+  <Connections>
+    <Connection>
+      <Origin ToolID="1" Connection="Output" />
+      <Destination ToolID="2" Connection="Input" />
+    </Connection>
+    <Connection>
+      <Origin ToolID="2" Connection="Output" />
+      <Destination ToolID="3" Connection="Input" />
+    </Connection>
+    <Connection>
+      <Origin ToolID="3" Connection="True" />
+      <Destination ToolID="4" Connection="Input" />
+    </Connection>
+    <Connection>
+      <Origin ToolID="3" Connection="False" />
+      <Destination ToolID="5" Connection="Input" />
+    </Connection>
+  </Connections>
+</AlteryxDocument>

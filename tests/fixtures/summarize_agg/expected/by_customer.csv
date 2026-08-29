@@ -1,0 +1,4 @@
+Customer,Total,NumOrders,AvgAmount,MinAmount,DistinctItems,Items
+Acme,350,2,175.0,100,2,"widget,gadget"
+Beta,100,2,50.0,20,1,"widget,widget"
+,999,1,999.0,999,1,mystery

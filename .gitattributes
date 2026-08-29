@@ -1,0 +1,5 @@
+# Excel fixture files are binary; a newline conversion corrupts them silently.
+*.xlsx binary
+
+# Golden expected/ CSVs are compared through pandas (newline-agnostic), so
+# default text handling is fine everywhere else.

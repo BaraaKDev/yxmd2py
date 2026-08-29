@@ -1,0 +1,28 @@
+[project]
+name = "yxmd2py"
+version = "0.1.0"
+description = "Translate Alteryx .yxmd workflow files into standalone Python/pandas scripts"
+readme = "README.md"
+# Floor, not the dev interpreter: pandas 3.x needs >=3.11; we develop on 3.14.
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.0",
+    "pandas>=3.0",
+]
+
+[project.scripts]
+yxmd2py = "yxmd2py.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.11.8,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "openpyxl>=3.1.5",
+    "pytest>=9.1.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: runs a real uv subprocess; deselect with -m 'not slow'"]

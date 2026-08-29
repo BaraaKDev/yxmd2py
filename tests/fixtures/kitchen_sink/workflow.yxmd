@@ -1,0 +1,119 @@
+<?xml version="1.0"?>
+<AlteryxDocument yxmdVer="2023.1">
+  <Nodes>
+    <Node ToolID="1">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.DbFileInput.DbFileInput" />
+      <Properties>
+        <Configuration><File FileFormat="25">inputs\orders.csv</File></Configuration>
+      </Properties>
+    </Node>
+    <Node ToolID="2">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.DbFileInput.DbFileInput" />
+      <Properties>
+        <Configuration><File FileFormat="54">inputs\customers.xlsx|||`Clients$`</File></Configuration>
+      </Properties>
+    </Node>
+    <Node ToolID="3">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.Formula.Formula" />
+      <Properties>
+        <Configuration>
+          <FormulaFields>
+            <FormulaField expression="IIF([Amount] &gt;= 100, 1, 0)" field="Big" type="Byte" size="1" />
+          </FormulaFields>
+        </Configuration>
+      </Properties>
+    </Node>
+    <Node ToolID="4">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.Filter.Filter" />
+      <Properties>
+        <Configuration>
+          <Expression>[Amount] &gt; 0</Expression>
+          <Mode>Custom</Mode>
+        </Configuration>
+      </Properties>
+    </Node>
+    <Node ToolID="5">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.Join.Join" />
+      <Properties>
+        <Configuration joinByRecordPos="False">
+          <JoinInfo connection="Left"><Field field="Customer" /></JoinInfo>
+          <JoinInfo connection="Right"><Field field="Customer" /></JoinInfo>
+        </Configuration>
+        <Annotation><AnnotationText>Orders with a known tier go to J, the rest stay on L</AnnotationText></Annotation>
+      </Properties>
+    </Node>
+    <Node ToolID="6">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.Union.Union" />
+      <Properties>
+        <Configuration>
+          <Mode>ByName</Mode>
+          <ByName_OutputMode>All</ByName_OutputMode>
+        </Configuration>
+      </Properties>
+    </Node>
+    <Node ToolID="7">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.Summarize.Summarize" />
+      <Properties>
+        <Configuration>
+          <SummarizeFields>
+            <SummarizeField field="Customer" action="GroupBy" rename="Customer" />
+            <SummarizeField field="Amount" action="Sum" rename="Total" />
+            <SummarizeField field="Amount" action="Count" rename="N" />
+          </SummarizeFields>
+        </Configuration>
+      </Properties>
+    </Node>
+    <Node ToolID="8">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.Sort.Sort" />
+      <Properties>
+        <Configuration>
+          <SortInfo><Field field="Total" order="Descending" /></SortInfo>
+        </Configuration>
+      </Properties>
+    </Node>
+    <Node ToolID="9">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.DbFileOutput.DbFileOutput" />
+      <Properties>
+        <Configuration><File FileFormat="0">final.csv</File></Configuration>
+      </Properties>
+    </Node>
+  </Nodes>
+  <Connections>
+    <Connection>
+      <Origin ToolID="1" Connection="Output" />
+      <Destination ToolID="3" Connection="Input" />
+    </Connection>
+    <Connection>
+      <Origin ToolID="3" Connection="Output" />
+      <Destination ToolID="4" Connection="Input" />
+    </Connection>
+    <Connection>
+      <Origin ToolID="4" Connection="True" />
+      <Destination ToolID="5" Connection="Left" />
+    </Connection>
+    <Connection>
+      <Origin ToolID="2" Connection="Output" />
+      <Destination ToolID="5" Connection="Right" />
+    </Connection>
+    <Connection>
+      <Origin ToolID="5" Connection="Join" />
+      <Destination ToolID="6" Connection="#1" />
+    </Connection>
+    <Connection>
+      <Origin ToolID="5" Connection="Left" />
+      <Destination ToolID="6" Connection="#2" />
+    </Connection>
+    <Connection>
+      <Origin ToolID="6" Connection="Output" />
+      <Destination ToolID="7" Connection="Input" />
+    </Connection>
+    <Connection>
+      <Origin ToolID="7" Connection="Output" />
+      <Destination ToolID="8" Connection="Input" />
+    </Connection>
+    <Connection>
+      <Origin ToolID="8" Connection="Output" />
+      <Destination ToolID="9" Connection="Input" />
+    </Connection>
+  </Connections>
+</AlteryxDocument>

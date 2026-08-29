@@ -1,0 +1,4 @@
+CustId,Name,Region,Amount,Region_Right
+1,Acme,East,100,East
+1,Acme,East,250,West
+2,Beta,West,80,Central
