@@ -94,6 +94,14 @@ def generate(wf: Workflow) -> GeneratedScript:
     const_counts: dict[str, int] = {}
 
     def add_path_const(kind: str, path: str) -> str:
+        # Alteryx paths are Windows-style. A RELATIVE one gets forward slashes so
+        # the script runs on any OS (Windows accepts them too). An ABSOLUTE one
+        # (C:\... or \\share\...) stays verbatim - it is machine-specific and the
+        # user must repoint it regardless, so rewriting separators only obscures
+        # where it came from.
+        is_absolute = len(path) >= 2 and (path[1] == ":" or path.startswith("\\\\"))
+        if not is_absolute:
+            path = path.replace("\\", "/")
         const_counts[kind] = const_counts.get(kind, 0) + 1
         name = f"{kind.upper()}_{const_counts[kind]}"
         path_consts.append((name, path))

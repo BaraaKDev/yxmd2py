@@ -174,3 +174,18 @@ def test_path_constants_are_hoisted(tmp_path):
     assert 'INPUT_1 = r"C:\\data\\in.csv"' in script.source
     assert 'OUTPUT_1 = r"C:\\data\\out.csv"' in script.source
     assert "pd.read_csv(INPUT_1)" in script.source
+
+
+def test_relative_paths_normalize_to_forward_slashes(tmp_path):
+    # Alteryx writes inputs\file.csv; forward slashes run on every OS, and
+    # Windows accepts them too. Absolute paths (above) stay verbatim.
+    nodes = """
+    <Node ToolID="1">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.DbFileInput.DbFileInput" />
+      <Properties><Configuration>
+        <File>inputs\\nested\\in.csv</File>
+      </Configuration></Properties>
+    </Node>
+    """
+    script = _generate(tmp_path, nodes, "")
+    assert 'INPUT_1 = r"inputs/nested/in.csv"' in script.source
