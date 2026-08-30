@@ -1,5 +1,7 @@
 # yxmd2py
 
+![tests](https://github.com/BaraaKDev/yxmd2py/actions/workflows/test.yml/badge.svg)
+
 **Translate Alteryx workflow files (`.yxmd`) into standalone Python/pandas scripts.**
 
 This is a migration aid, not an Alteryx replacement. You have workflows; you want the same
@@ -17,7 +19,9 @@ uv run yxmd2py flows\ --out-dir build\       # a folder at a time
 
 **Tools:** Select, Filter (Simple and Custom expressions), Formula, Join, Union,
 Summarize, Sort, Unique, Sample — plus Input Data / Output Data / Text Input for CSV and
-Excel. Browse tools are recognized and skipped. Anything else becomes a passthrough stub
+Excel. Browse tools are recognized and skipped, and tools inside **disabled Tool
+Containers emit no code** — Alteryx wouldn't run them, so neither does the translation
+(a downstream tool that depended on one degrades to a loud stub). Anything else becomes a passthrough stub
 with a `TODO(yxmd2py)` comment, a warning in the summary, and **exit code 1** — the
 script is still written and still runs, but CI can refuse it and a human knows where to
 look. Proprietary `.yxdb` inputs get the same treatment (the fix: export to CSV from

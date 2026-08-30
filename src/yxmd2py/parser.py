@@ -14,6 +14,50 @@ from .errors import ParseError
 from .model import Edge, Node, Port, Workflow
 
 
+def _collect_nodes(parent_el: ET.Element, wf: Workflow, disabled: bool) -> None:
+    """Walk <Node> children, recursing into Tool Containers via <ChildNodes>.
+
+    A container's <Configuration><Disabled value="True"/> disables its entire
+    subtree — Alteryx would not run those tools, so translating them would emit
+    code the workflow never executes. The disabled flag inherits downward: an
+    enabled container inside a disabled one is still dead.
+    """
+    for node_el in parent_el.findall("Node"):
+        tool_id_raw = node_el.get("ToolID")
+        try:
+            tool_id = int(tool_id_raw) if tool_id_raw is not None else None
+        except ValueError:
+            tool_id = None
+
+        gui = node_el.find("GuiSettings")
+        plugin = (gui.get("Plugin") or "") if gui is not None else ""
+        config = node_el.find("Properties/Configuration")
+
+        node_disabled = disabled
+        if not node_disabled and config is not None:
+            dis_el = config.find("Disabled")
+            if dis_el is not None and dis_el.get("value") == "True":
+                node_disabled = True
+
+        if tool_id is not None:
+            # AnnotationText is the user-typed note; DefaultAnnotationText is
+            # Designer's auto-generated label. Prefer the former.
+            annotation = None
+            for tag in ("AnnotationText", "DefaultAnnotationText"):
+                ann_el = node_el.find(f"Properties/Annotation/{tag}")
+                if ann_el is not None and ann_el.text and ann_el.text.strip():
+                    annotation = ann_el.text.strip()
+                    break
+            wf.nodes[tool_id] = Node(
+                tool_id=tool_id, plugin=plugin, config=config,
+                annotation=annotation, disabled=node_disabled,
+            )
+
+        child_el = node_el.find("ChildNodes")
+        if child_el is not None:
+            _collect_nodes(child_el, wf, disabled=node_disabled)
+
+
 def parse_yxmd(path: Path) -> Workflow:
     try:
         tree = ET.parse(path)
@@ -28,33 +72,7 @@ def parse_yxmd(path: Path) -> Workflow:
         raise ParseError(f"{path}: no <Nodes> element — is this a .yxmd workflow?")
 
     wf = Workflow(source_path=path, yxmd_version=root.get("yxmdVer"))
-
-    for node_el in nodes_el.iter("Node"):
-        tool_id_raw = node_el.get("ToolID")
-        if tool_id_raw is None:
-            continue  # a Node without a ToolID cannot be wired; skip defensively
-        try:
-            tool_id = int(tool_id_raw)
-        except ValueError:
-            continue
-
-        gui = node_el.find("GuiSettings")
-        plugin = (gui.get("Plugin") or "") if gui is not None else ""
-
-        config = node_el.find("Properties/Configuration")
-
-        # AnnotationText is the user-typed note; DefaultAnnotationText is Designer's
-        # auto-generated label. Prefer the former, fall back to the latter.
-        annotation = None
-        for tag in ("AnnotationText", "DefaultAnnotationText"):
-            ann_el = node_el.find(f"Properties/Annotation/{tag}")
-            if ann_el is not None and ann_el.text and ann_el.text.strip():
-                annotation = ann_el.text.strip()
-                break
-
-        wf.nodes[tool_id] = Node(
-            tool_id=tool_id, plugin=plugin, config=config, annotation=annotation
-        )
+    _collect_nodes(nodes_el, wf, disabled=False)
 
     conns_el = root.find("Connections")
     if conns_el is not None:

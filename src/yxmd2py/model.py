@@ -24,6 +24,7 @@ class Node:
     plugin: str  # raw GuiSettings/@Plugin, verbatim (may be "")
     config: ET.Element | None  # raw <Configuration>, unparsed
     annotation: str | None = None
+    disabled: bool = False  # inside a disabled Tool Container; Alteryx would not run it
 
 
 @dataclass

@@ -46,7 +46,7 @@ class GeneratedScript:
 
     @property
     def clean(self) -> bool:
-        return all(r.status in ("ok", "ignored") for r in self.results)
+        return all(r.status in ("ok", "ignored", "disabled") for r in self.results)
 
 
 def topo_order(wf: Workflow) -> list[int]:
@@ -107,6 +107,11 @@ def generate(wf: Workflow) -> GeneratedScript:
     for tid in order:
         node = wf.nodes[tid]
         spec = registry.resolve(node.plugin)
+
+        if node.disabled:
+            # Alteryx would not run this tool (disabled Tool Container), so no code.
+            results.append(NodeResult(tid, spec.display, "disabled"))
+            continue
 
         if spec.kind == "ignore":
             ignored_count += 1

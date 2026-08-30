@@ -20,7 +20,9 @@ def summarize(script: GeneratedScript) -> str:
     if by_status.get("stub"):
         parts.append(f"stubbed {by_status['stub']}")
     if by_status.get("ignored"):
-        parts.append(f"skipped {by_status['ignored']} Browse")
+        parts.append(f"skipped {by_status['ignored']} data no-op(s)")
+    if by_status.get("disabled"):
+        parts.append(f"skipped {by_status['disabled']} disabled tool(s)")
     lines = [", ".join(parts)]
     for r in script.results:
         for todo in r.todos:
@@ -30,7 +32,7 @@ def summarize(script: GeneratedScript) -> str:
 
 def coverage_table(results: list[NodeResult]) -> str:
     """--check output: one row per tool, worst statuses first."""
-    rank = {"stub": 0, "partial": 1, "ignored": 2, "ok": 3}
+    rank = {"stub": 0, "partial": 1, "ignored": 2, "disabled": 2, "ok": 3}
     rows = sorted(results, key=lambda r: (rank.get(r.status, 0), r.tool_id))
     width = max((len(r.label) for r in rows), default=4)
     out = [f"  {'ToolID':>6}  {'Tool':<{width}}  Status"]

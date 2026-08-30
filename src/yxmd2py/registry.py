@@ -23,7 +23,9 @@ ALIASES: dict[str, str] = {
 }
 
 # Recognized, deliberately skipped, counted in the report — data no-ops.
-IGNORED: set[str] = {"Browse"}
+# ToolContainer is organizational: its children are real nodes collected by the
+# parser; the container itself produces no data.
+IGNORED: set[str] = {"Browse", "ToolContainer"}
 
 
 def register(key: str, spec: ToolSpec) -> None:

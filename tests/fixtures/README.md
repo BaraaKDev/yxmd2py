@@ -39,6 +39,7 @@ config-shape difference means updating that one tool's module and the fixture he
 | `Unique` | `<UniqueFields><Field field/></UniqueFields>`; output ports `Unique` / `Dup` |
 | `Sample` | `<Mode>First\|Last\|Skip\|OneInN</Mode>` + `<N>` (text or value attr) + optional `<GroupFields><Field field/></GroupFields>` |
 | `Browse` (+ `BrowseV2` alias) | recognized and skipped — data no-op |
+| `ToolContainer` | organizational no-op; children live under `<ChildNodes>`; `<Configuration><Disabled value="True"/>` disables the whole subtree (inherited downward — an enabled container inside a disabled one is still dead), and those tools emit **no code**, since Alteryx would not run them |
 
 ## Semantic conventions pinned by these fixtures
 
