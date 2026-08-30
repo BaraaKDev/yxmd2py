@@ -14,7 +14,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      # setup-uv publishes exact tags only - no floating v10 major tag exists.
+      - uses: astral-sh/setup-uv@v10.0.1
       # uv reads .python-version and provisions the interpreter itself.
       - run: uv sync
       - run: uv run pytest
