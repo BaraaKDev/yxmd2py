@@ -18,8 +18,8 @@ uv run yxmd2py flows\ --out-dir build\       # a folder at a time
 ## What it translates
 
 **Tools:** Select, Filter (Simple and Custom expressions), Formula, Join, Union,
-Summarize, Sort, Unique, Sample — plus Input Data / Output Data / Text Input for CSV and
-Excel. Browse tools are recognized and skipped, and tools inside **disabled Tool
+Summarize, Sort, Unique, Sample, Record ID, Text To Columns, Transpose, Cross Tab —
+plus Input Data / Output Data / Text Input for CSV and Excel. Browse tools are recognized and skipped, and tools inside **disabled Tool
 Containers emit no code** — Alteryx wouldn't run them, so neither does the translation
 (a downstream tool that depended on one degrades to a loud stub). Anything else becomes a passthrough stub
 with a `TODO(yxmd2py)` comment, a warning in the summary, and **exit code 1** — the

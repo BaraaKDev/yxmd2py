@@ -5,7 +5,23 @@ middle tokens — are visible in one place next to the specs they map to.
 """
 
 from .. import registry
-from . import filter_tool, formula, io_tools, join, sample, select, sort, summarize, textinput, union, unique
+from . import (
+    crosstab,
+    filter_tool,
+    formula,
+    io_tools,
+    join,
+    recordid,
+    sample,
+    select,
+    sort,
+    summarize,
+    textinput,
+    texttocolumns,
+    transpose,
+    union,
+    unique,
+)
 
 registry.register("TextInput", textinput.SPEC)
 registry.register("DbFileInput", io_tools.INPUT_SPEC)
@@ -19,3 +35,7 @@ registry.register("Union", union.SPEC)
 registry.register("Join", join.SPEC)
 registry.register("Summarize", summarize.SPEC)
 registry.register("Formula", formula.SPEC)
+registry.register("RecordID", recordid.SPEC)
+registry.register("TextToColumns", texttocolumns.SPEC)
+registry.register("Transpose", transpose.SPEC)
+registry.register("CrossTab", crosstab.SPEC)

@@ -38,6 +38,10 @@ config-shape difference means updating that one tool's module and the fixture he
 | `Sort` | `<SortInfo><Field field order="Ascending\|Descending"/></SortInfo>` |
 | `Unique` | `<UniqueFields><Field field/></UniqueFields>`; output ports `Unique` / `Dup` |
 | `Sample` | `<Mode>First\|Last\|Skip\|OneInN</Mode>` + `<N>` (text or value attr) + optional `<GroupFields><Field field/></GroupFields>` |
+| `RecordID` | `<FieldName>` + `<StartValue>` + `<Position>` (0 = first column, else last) |
+| `TextToColumns` | `<Field>`, `<Delimeters value>` (each CHARACTER is a delimiter, misspelling included), `<SplitRows value>` (attr or text; True = explode to rows), columns mode adds `<NumFields value>` + `<RootName>` giving Root1..RootN; extra text stays in the LAST column |
+| `Transpose` | `<KeyFields>` + `<DataFields>` with `selected` and the `*Unknown` sentinel; output is keys + `Name`/`Value`, record-major like Alteryx |
+| `CrossTab` | `<GroupFields>` + `<HeaderField>` + `<DataField>` + `<Methods><Method>`; ONE method per tool (several at once → stub); empty cells stay null; header values become column names verbatim (Alteryx would sanitize to `_`) |
 | `Browse` (+ `BrowseV2` alias) | recognized and skipped — data no-op |
 | `ToolContainer` | organizational no-op; children live under `<ChildNodes>`; `<Configuration><Disabled value="True"/>` disables the whole subtree (inherited downward — an enabled container inside a disabled one is still dead), and those tools emit **no code**, since Alteryx would not run them |
 
