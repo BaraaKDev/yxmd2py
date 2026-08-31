@@ -57,6 +57,14 @@ config-shape difference means updating that one tool's module and the fixture he
 - **Expressions**: `Contains`/`StartsWith`/`EndsWith` case-insensitive by default;
   `FindString` case-sensitive, 0-based, -1 when absent; `Substring` 0-based;
   `Round(x, m)` rounds to the nearest multiple m; `Mod` follows the dividend's sign.
+- **Regex** (verified against the Alteryx docs, not recalled): all three `REGEX_*`
+  functions are case-insensitive by default with `0` as the last argument forcing
+  case; `REGEX_Match` matches the ENTIRE string (`fullmatch`, never `contains`);
+  `REGEX_Replace` group refs convert `$1` → `\g<1>`, and a computed replacement
+  carrying `$` refs is refused rather than emitting literal dollar signs.
+- **Macros**: a node whose `<EngineSettings>` carries a `Macro` attribute is a
+  macro reference; it stubs with a message naming the `.yxmc` rather than the
+  generic unknown-tool text.
 
 ## Golden-test convention
 

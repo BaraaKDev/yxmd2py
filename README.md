@@ -29,8 +29,11 @@ Designer).
 
 **Expressions:** a real parser for the Alteryx formula language — `[Field]` references,
 `IF/ELSEIF/ELSE/ENDIF`, `IIF`, `AND/OR/NOT`, and a function library covering null
-handling, conversions, strings, math, and datetimes. An expression the engine doesn't
-support is kept **verbatim** in a TODO comment; nothing is approximated.
+handling, conversions, strings, regex (`REGEX_Match`/`Replace`/`CountMatches`, with
+Alteryx's full-string-match and `$1` group-ref semantics), math, and datetimes. An
+expression the engine doesn't support is kept **verbatim** in a TODO comment; nothing
+is approximated. Macro references are recognized as such and stub with a pointer to
+the `.yxmc` they run.
 
 ## What the generated script looks like
 

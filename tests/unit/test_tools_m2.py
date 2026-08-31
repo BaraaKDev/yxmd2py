@@ -108,7 +108,7 @@ def test_untranslatable_custom_filter_degrades_with_verbatim_expression(tmp_path
     <Node ToolID="2">
       <GuiSettings Plugin="AlteryxBasePluginsGui.Filter.Filter" />
       <Properties><Configuration>
-        <Expression>REGEX_Match([A], '^x.*')</Expression>
+        <Expression>Switch([A], 'x', 1, 0) = 1</Expression>
         <Mode>Custom</Mode>
       </Configuration></Properties>
     </Node>
@@ -116,7 +116,7 @@ def test_untranslatable_custom_filter_degrades_with_verbatim_expression(tmp_path
     script = _generate(tmp_path, nodes, CONN_1_TO_2)
     assert not script.clean
     # The verbatim expression must survive into the TODO.
-    assert "REGEX_Match([A], '^x.*')" in script.source
+    assert "Switch([A], 'x', 1, 0) = 1" in script.source
 
 
 def test_unknown_tool_passthrough_keeps_pipeline_wired(tmp_path):

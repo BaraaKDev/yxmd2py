@@ -25,6 +25,7 @@ class Node:
     config: ET.Element | None  # raw <Configuration>, unparsed
     annotation: str | None = None
     disabled: bool = False  # inside a disabled Tool Container; Alteryx would not run it
+    macro: str | None = None  # EngineSettings/@Macro: this node runs a .yxmc, not a tool
 
 
 @dataclass

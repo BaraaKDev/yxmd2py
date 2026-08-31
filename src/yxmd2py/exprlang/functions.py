@@ -115,6 +115,50 @@ _fn("padleft", 3)(lambda a: f"({a[0]}).str.rjust({a[1]}, {a[2]})")
 _fn("padright", 3)(lambda a: f"({a[0]}).str.ljust({a[1]}, {a[2]})")
 _fn("pow", 2)(lambda a: f"(({a[0]}) ** ({a[1]}))")
 
+# --- regex ---------------------------------------------------------------------
+# All three are case-insensitive by default (icase=1 per the Alteryx docs); a
+# third argument of 0 forces case sensitivity. Insensitivity rides on an inline
+# (?i) prefix concatenated onto the pattern, which works for literal and
+# computed patterns alike and needs no re import in the generated script.
+
+
+def _rx_pattern(args: list[str], icase_index: int) -> str:
+    case_sensitive = len(args) > icase_index and args[icase_index] == "0"
+    return args[1] if case_sensitive else f"'(?i)' + {args[1]}"
+
+
+def _regex_match(args: list[str]) -> str:
+    # Alteryx REGEX_Match matches "from the first character to the end" - the
+    # ENTIRE string - hence fullmatch, never contains.
+    return f"({args[0]}).str.fullmatch({_rx_pattern(args, 2)})"
+
+
+def _regex_countmatches(args: list[str]) -> str:
+    return f"({args[0]}).str.count({_rx_pattern(args, 2)})"
+
+
+def _regex_replace(args: list[str]) -> str:
+    # Alteryx replacements reference groups as $1; python re wants \g<1>. The
+    # conversion is textual on the emitted source literal, so a computed
+    # replacement carrying $ refs is refused rather than silently emitting
+    # literal dollar signs.
+    import re as _re
+
+    repl = args[2]
+    if "$" in repl:
+        if not (repl.startswith("'") and repl.endswith("'")):
+            raise ExprUnsupported(
+                "REGEX_Replace() with $ group refs in a non-literal replacement"
+            )
+        repl = _re.sub(r"\$(\d+)", r"\\\\g<\1>", repl)
+    return f"({args[0]}).str.replace({_rx_pattern(args, 3)}, {repl}, regex=True)"
+
+
+_fn("regex_match", 2, 3)(_regex_match)
+_fn("regex_countmatches", 2, 3)(_regex_countmatches)
+_fn("regex_replace", 3, 4)(_regex_replace)
+
+
 # --- tier 2: datetime ----------------------------------------------------------
 _DT_UNITS = {"days": "D", "hours": "h", "minutes": "m", "seconds": "s"}
 

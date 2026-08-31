@@ -48,9 +48,16 @@ def _collect_nodes(parent_el: ET.Element, wf: Workflow, disabled: bool) -> None:
                 if ann_el is not None and ann_el.text and ann_el.text.strip():
                     annotation = ann_el.text.strip()
                     break
+
+            # A macro reference: EngineSettings carries the .yxmc path instead of
+            # an engine DLL. The node's real logic lives in that file.
+            engine_el = node_el.find("EngineSettings")
+            macro = engine_el.get("Macro") if engine_el is not None else None
+
             wf.nodes[tool_id] = Node(
                 tool_id=tool_id, plugin=plugin, config=config,
                 annotation=annotation, disabled=node_disabled,
+                macro=(macro or None),
             )
 
         child_el = node_el.find("ChildNodes")

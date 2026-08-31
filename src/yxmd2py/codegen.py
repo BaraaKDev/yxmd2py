@@ -155,14 +155,27 @@ def generate(wf: Workflow) -> GeneratedScript:
         )
 
         try:
-            emission = spec.translate(node, ctx)
+            if spec.kind == "stub" and node.macro:
+                # Not an unknown tool - a macro reference. Say what it is and
+                # where the logic actually lives, instead of the generic text.
+                emission = stub_emission(
+                    node, ctx,
+                    reason=(
+                        f"macro reference ({node.macro}) - a macro's logic lives in "
+                        "its own canvas; run yxmd2py on that file and splice the result in here"
+                    ),
+                    display="Macro",
+                )
+            else:
+                emission = spec.translate(node, ctx)
         except ConfigUnsupported as exc:
             emission = stub_emission(node, ctx, reason=str(exc), display=spec.display)
 
+        display = "Macro" if (spec.kind == "stub" and node.macro) else spec.display
         emissions[tid] = emission
-        results.append(NodeResult(tid, spec.display, emission.status, list(emission.todos)))
+        results.append(NodeResult(tid, display, emission.status, list(emission.todos)))
 
-        header = f"# {'=' * 12} Tool {tid}: {spec.display} {'=' * 12}"
+        header = f"# {'=' * 12} Tool {tid}: {display} {'=' * 12}"
         block = [header]
         if node.annotation:
             for ann_line in node.annotation.splitlines():

@@ -88,6 +88,14 @@ EVALUATED = [
     ("PadLeft([Code], 5, '0')", ["00A-1", "00b-2", "00A-3", "00c-4"]),
     ("PadRight([Code], 5, '.')", ["A-1..", "b-2..", "A-3..", "c-4.."]),
     ("Pow([Bonus], 2)", [100.0, 25.0, 1.0, 0.0]),
+    # regex: entire-string match, case-insensitive by default, 0 forces case
+    ("REGEX_Match([Code], 'a-\\d')", [True, False, True, False]),
+    ("REGEX_Match([Code], 'a-\\d', 0)", [False, False, False, False]),
+    ("REGEX_Match([Code], '[abc]')", [False, False, False, False]),  # full match, not substring
+    ("REGEX_CountMatches([Name], '[aeiou]')", [3, 1, 2, None]),
+    ("REGEX_CountMatches([Name], 'A', 0)", [1, 0, 2, None]),
+    ("REGEX_Replace([Code], '(\\w)-(\\d)', '$2_$1')", ["1_A", "2_b", "3_A", "4_c"]),
+    ("REGEX_Replace([Name], '\\s+', '')", ["Alice", "bob", "CARA", None]),
 ]
 
 DATES = pd.DataFrame(
@@ -148,7 +156,7 @@ def test_emission_style(expr, code):
 
 
 UNSUPPORTED = [
-    "REGEX_Match([A], '\\d+')",  # tier-3 function
+    "REGEX_Replace([A], '(x)', [B] + '$1')",  # $ group refs in a computed replacement
     "[A] +",  # syntax error
     "Switch([A], 'x', 1, 2)",  # tier-3, deliberately absent until a real workflow needs it
     "DateTimeAdd([A], 1, 'months')",  # calendar arithmetic refused, not guessed
