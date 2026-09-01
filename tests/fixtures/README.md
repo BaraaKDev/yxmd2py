@@ -41,7 +41,8 @@ config-shape difference means updating that one tool's module and the fixture he
 | `RecordID` | `<FieldName>` + `<StartValue>` + `<Position>` (0 = first column, else last) |
 | `TextToColumns` | `<Field>`, `<Delimeters value>` (each CHARACTER is a delimiter, misspelling included), `<SplitRows value>` (attr or text; True = explode to rows), columns mode adds `<NumFields value>` + `<RootName>` giving Root1..RootN; extra text stays in the LAST column |
 | `Transpose` | `<KeyFields>` + `<DataFields>` with `selected` and the `*Unknown` sentinel; output is keys + `Name`/`Value`, record-major like Alteryx |
-| `CrossTab` | `<GroupFields>` + `<HeaderField>` + `<DataField>` + `<Methods><Method>`; ONE method per tool (several at once → stub); empty cells stay null; header values become column names verbatim (Alteryx would sanitize to `_`) |
+| `CrossTab` | `<GroupFields>` + `<HeaderField field/>` + `<DataField field/>` + `<Methods><Method method/>` (attribute form, confirmed in a real Designer export; text form accepted too); ONE method per tool (several at once → stub); empty cells stay null; header values become column names verbatim (Alteryx would sanitize to `_`) |
+| `AlteryxGuiToolkit.*` (whole prefix) | canvas furniture, not data tools: Browse, Tool Container, HtmlBox, TextBox, Action, Questions.*, Error. All recognized no-ops; ignoring Action tools also stops their configuration arrows counting as data inputs (a real macro's Sort was refusing "2 inputs" before this) |
 | `Browse` (+ `BrowseV2` alias) | recognized and skipped — data no-op |
 | `ToolContainer` | organizational no-op; children live under `<ChildNodes>`; `<Configuration><Disabled value="True"/>` disables the whole subtree (inherited downward — an enabled container inside a disabled one is still dead), and those tools emit **no code**, since Alteryx would not run them |
 
@@ -76,6 +77,27 @@ tolerant read (`assert_frame_equal(check_dtype=False)`). Paths inside fixtures a
 
 The `.xlsx` fixture inputs are generated (see git history) — regenerate rather than
 editing them by hand.
+
+## Validation against genuine Designer exports (2026-09-01)
+
+Real `.yxmd`/`.yxmc` files found in public GitHub repos — an Alteryx-authored guide,
+a DataKind analyst workflow (95 KB, 21 nodes), the CReW macro pack, and an Alteryx
+ACE's add-in workflows — were run through `--check` and full translation. The files
+stay OUT of this repo (they carry their own licenses); every finding is encoded in
+`tests/unit/test_realfile_findings.py` instead:
+
+- **Confirmed as-assumed on a real export**: Input/Output Data, Select, Filter,
+  Formula, Summarize, Transpose, JoinInfo keys, Annotation, Connections. The
+  DataKind workflow translates 15/15 data tools with zero TODOs.
+- **Corrected**: Cross Tab uses attribute form (`field=`/`method=`), the
+  `AlteryxGuiToolkit.*` prefix rule above, the Join embedded-Select general
+  drops/renames, and numeric filter operands normalize through int()/float()
+  (a real workflow's `095` FIPS operand was a python SyntaxError verbatim).
+- **Codegen now compile-checks its own output** and fails loudly on a bug of that
+  class instead of writing a broken script.
+- Third-party converter projects' sample workflows were inspected and found to use
+  invented config shapes contradicting real exports (`<SortFields>`, `<JoinFields>`,
+  `GuiSettings Tool=`) — deliberately not supported.
 
 ## provided_examples/
 

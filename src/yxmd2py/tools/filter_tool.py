@@ -25,11 +25,19 @@ _COMPARE_OPS = {"=": "==", "!=": "!=", "<>": "!=", ">": ">", ">=": ">=", "<": "<
 
 
 def _operand_literal(raw: str) -> str:
-    """Numbers stay numbers; everything else becomes a string literal."""
+    """Numbers stay numbers; everything else becomes a string literal.
+
+    Numeric text is re-emitted through int()/float() rather than echoed: a real
+    workflow filtered on a FIPS code operand of 095, and a leading-zero integer
+    literal is a SyntaxError in python source.
+    """
     text = raw.strip()
     try:
-        float(text)
-        return text
+        return repr(int(text))
+    except ValueError:
+        pass
+    try:
+        return repr(float(text))
     except ValueError:
         return pystr(text)
 

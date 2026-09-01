@@ -55,11 +55,18 @@ STUB_SPEC = ToolSpec(
 IGNORE_SPEC = ToolSpec(
     kind="ignore", in_ports=("Input",), out_ports=(),
     translate=_stub_translate,  # never called for ignored tools
-    label="Browse",
+    label="No-op",
 )
 
 
 def resolve(plugin: str) -> ToolSpec:
+    # Everything under AlteryxGuiToolkit.* is canvas furniture, not a data tool:
+    # Browse, Tool Containers, HtmlBox comment boxes, and the macro-interface
+    # family (TextBox, Action, Questions.*, Error). None of them transforms the
+    # data stream, and ignoring them also stops an Action tool's configuration
+    # arrows from being counted as data inputs on the tool they point at.
+    if plugin.startswith("AlteryxGuiToolkit."):
+        return IGNORE_SPEC
     token = plugin_token(plugin)
     token = ALIASES.get(token, token)
     if token in IGNORED:

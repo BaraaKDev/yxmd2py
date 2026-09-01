@@ -220,7 +220,20 @@ def generate(wf: Workflow) -> GeneratedScript:
     lines.append(body)
     lines.append("")
 
-    return GeneratedScript(source="\n".join(lines), results=results)
+    source = "\n".join(lines)
+    # A generated script that does not even compile is a yxmd2py bug, never a
+    # user problem - fail loudly instead of writing broken output. (Found the
+    # hard way: a real workflow's filter operand of 095 emitted a leading-zero
+    # integer literal.)
+    try:
+        compile(source, f"<yxmd2py: {wf.source_path.name}>", "exec")
+    except SyntaxError as exc:
+        raise ParseError(
+            f"{wf.source_path.name}: generated script failed to compile - "
+            f"this is a yxmd2py bug, please report it (line {exc.lineno}: {exc.msg})"
+        ) from exc
+
+    return GeneratedScript(source=source, results=results)
 
 
 def path_literal(value: str) -> str:

@@ -1,10 +1,11 @@
 """Cross Tab: tall to wide - one field's values become column headers.
 
-Assumed config shape:
+Config shape, as seen in a real Designer export (attribute form) with the older
+text form accepted too:
     <GroupFields><Field field="Region" /></GroupFields>
-    <HeaderField>Month</HeaderField>
-    <DataField>Amount</DataField>
-    <Methods><Method>Sum</Method></Methods>
+    <HeaderField field="Month" />
+    <DataField field="Amount" />
+    <Methods><Method method="Sum" /></Methods>
 
 One aggregation method is supported per tool (Alteryx allows several at once,
 suffixing the column names - that variant degrades to a stub rather than
@@ -19,7 +20,7 @@ from __future__ import annotations
 
 from ..errors import ConfigUnsupported
 from ..model import Node
-from ..spec import Emission, ToolSpec, TranslationContext, attr, cfg_findall, cfg_text, pystr
+from ..spec import Emission, ToolSpec, TranslationContext, attr, cfg_findall, cfg_root, pystr
 
 _METHODS: dict[str, str] = {
     "Sum": "'sum'",
@@ -33,14 +34,29 @@ _METHODS: dict[str, str] = {
 }
 
 
+def _field_ref(node: Node, tag: str) -> str:
+    """A field named either as <Tag field="X"/> (real Designer) or <Tag>X</Tag>."""
+    el = cfg_root(node).find(tag)
+    if el is None:
+        raise ConfigUnsupported(f"missing <{tag}> in configuration")
+    value = el.get("field") or (el.text or "").strip()
+    if not value:
+        raise ConfigUnsupported(f"<{tag}> names no field")
+    return value
+
+
 def _translate(node: Node, ctx: TranslationContext) -> Emission:
     src = ctx.sole_input()
     out = ctx.var("Output")
 
     groups = [attr(el, "field") for el in cfg_findall(node, "GroupFields/Field")]
-    header = cfg_text(node, "HeaderField").strip()
-    data = cfg_text(node, "DataField").strip()
-    methods = [el.text.strip() for el in cfg_findall(node, "Methods/Method") if el.text and el.text.strip()]
+    header = _field_ref(node, "HeaderField")
+    data = _field_ref(node, "DataField")
+    methods = []
+    for el in cfg_findall(node, "Methods/Method"):
+        value = el.get("method") or (el.text or "").strip()
+        if value:
+            methods.append(value)
     if not methods:
         raise ConfigUnsupported("Cross Tab has no aggregation <Method>")
     if len(methods) > 1:
