@@ -52,7 +52,11 @@ def tokenize(text: str) -> list[Token]:
             tokens.append(Token("string", value[1:-1]))
         elif kind == "ident":
             low = value.lower()
-            tokens.append(Token("keyword" if low in KEYWORDS else "ident", low))
+            # Keywords normalize to lowercase; other identifiers KEEP their case,
+            # because a bare identifier can be a field reference (Alteryx allows
+            # unbracketed names, seen in a real export) and column names are
+            # case-sensitive in pandas. Function names lowercase at call sites.
+            tokens.append(Token("keyword", low) if low in KEYWORDS else Token("ident", value))
         else:
             tokens.append(Token(kind, value))
     tokens.append(Token("end", ""))

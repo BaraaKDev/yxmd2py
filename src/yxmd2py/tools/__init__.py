@@ -11,6 +11,7 @@ from . import (
     formula,
     io_tools,
     join,
+    multirow,
     recordid,
     sample,
     select,
@@ -39,3 +40,4 @@ registry.register("RecordID", recordid.SPEC)
 registry.register("TextToColumns", texttocolumns.SPEC)
 registry.register("Transpose", transpose.SPEC)
 registry.register("CrossTab", crosstab.SPEC)
+registry.register("MultiRowFormula", multirow.SPEC)

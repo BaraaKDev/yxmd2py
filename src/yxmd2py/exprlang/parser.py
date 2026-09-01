@@ -7,9 +7,13 @@ appear. Any surprise raises ExprUnsupported — no partial recovery, by contract
 
 from __future__ import annotations
 
+import re
+
 from ..errors import ExprUnsupported
-from .ast import BinOp, FieldRef, Func, IfExpr, Lit, UnaryOp
+from .ast import BinOp, FieldRef, Func, IfExpr, Lit, RowRef, UnaryOp
 from .lexer import Token, tokenize
+
+_ROW_REF = re.compile(r"^row([+-]\d+):(.+)$", re.IGNORECASE)
 
 _COMPARE = {"=": "==", "==": "==", "!=": "!=", "<>": "!=", "<": "<", "<=": "<=", ">": ">", ">=": ">="}
 
@@ -92,6 +96,9 @@ class _Parser:
     def primary(self):
         tok = self.next()
         if tok.kind == "field":
+            m = _ROW_REF.match(tok.value)
+            if m:
+                return RowRef(int(m.group(1)), m.group(2))
             return FieldRef(tok.value)
         if tok.kind == "string":
             return Lit(tok.value)
@@ -107,9 +114,12 @@ class _Parser:
         if tok.kind == "keyword" and tok.value == "if":
             return self.if_expr()
         if tok.kind == "ident":
-            opening = self.next()
-            if opening.kind != "op" or opening.value != "(":
-                raise ExprUnsupported(f"bare identifier {tok.value!r} (fields need [brackets])")
+            nxt = self.peek()
+            if nxt.kind != "op" or nxt.value != "(":
+                # Alteryx allows unbracketed field names when they carry no
+                # spaces or specials - seen in a real Designer export.
+                return FieldRef(tok.value)
+            self.next()  # consume '('
             args: list = []
             if not (self.peek().kind == "op" and self.peek().value == ")"):
                 args.append(self.expression())
@@ -119,7 +129,7 @@ class _Parser:
             closing = self.next()
             if closing.kind != "op" or closing.value != ")":
                 raise ExprUnsupported(f"unbalanced call to {tok.value}()")
-            return Func(tok.value, tuple(args))
+            return Func(tok.value.lower(), tuple(args))
         raise ExprUnsupported(f"unexpected {tok.value!r}")
 
     def if_expr(self):

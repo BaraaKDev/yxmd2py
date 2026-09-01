@@ -42,6 +42,7 @@ config-shape difference means updating that one tool's module and the fixture he
 | `TextToColumns` | `<Field>`, `<Delimeters value>` (each CHARACTER is a delimiter, misspelling included), `<SplitRows value>` (attr or text; True = explode to rows), columns mode adds `<NumFields value>` + `<RootName>` giving Root1..RootN; extra text stays in the LAST column |
 | `Transpose` | `<KeyFields>` + `<DataFields>` with `selected` and the `*Unknown` sentinel; output is keys + `Name`/`Value`, record-major like Alteryx |
 | `CrossTab` | `<GroupFields>` + `<HeaderField field/>` + `<DataField field/>` + `<Methods><Method method/>` (attribute form, confirmed in a real Designer export; text form accepted too); ONE method per tool (several at once → stub); empty cells stay null; header values become column names verbatim (Alteryx would sanitize to `_`) |
+| `MultiRowFormula` | real-export shape: `<UpdateField value/>` + `<UpdateField_Name>`/`<CreateField_Name>`, `<OtherRows>` (NULL or 0; others → stub), `<Expression>` with `[Row±N:Field]` refs, `<GroupByFields>`. Vectorizes as `shift()` (grouped: `groupby().shift()`). An expression reading its OWN target's prior value (running total) is sequential and REFUSED verbatim — a wrong shift would look plausible |
 | `AlteryxGuiToolkit.*` (whole prefix) | canvas furniture, not data tools: Browse, Tool Container, HtmlBox, TextBox, Action, Questions.*, Error. All recognized no-ops; ignoring Action tools also stops their configuration arrows counting as data inputs (a real macro's Sort was refusing "2 inputs" before this) |
 | `Browse` (+ `BrowseV2` alias) | recognized and skipped — data no-op |
 | `ToolContainer` | organizational no-op; children live under `<ChildNodes>`; `<Configuration><Disabled value="True"/>` disables the whole subtree (inherited downward — an enabled container inside a disabled one is still dead), and those tools emit **no code**, since Alteryx would not run them |
@@ -66,6 +67,10 @@ config-shape difference means updating that one tool's module and the fixture he
 - **Macros**: a node whose `<EngineSettings>` carries a `Macro` attribute is a
   macro reference; it stubs with a message naming the `.yxmc` rather than the
   generic unknown-tool text.
+- **Bare field names**: Alteryx allows unbracketed field names with no
+  spaces/specials (seen in a real export); they parse as field refs with case
+  preserved. Source parentheses survive emission — `(a-b)/(c-d)` re-parenthesizes
+  by precedence, never flattens.
 
 ## Golden-test convention
 

@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<AlteryxDocument yxmdVer="2023.1">
+  <Nodes>
+    <Node ToolID="1">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.DbFileInput.DbFileInput" />
+      <Properties>
+        <Configuration><File FileFormat="25">inputs\points.csv</File></Configuration>
+      </Properties>
+    </Node>
+    <Node ToolID="2">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.MultiRowFormula.MultiRowFormula" />
+      <Properties>
+        <Configuration>
+          <UpdateField value="False" />
+          <UpdateField_Name />
+          <CreateField_Name>slope</CreateField_Name>
+          <CreateField_Type>Double</CreateField_Type>
+          <CreateField_Size>8</CreateField_Size>
+          <OtherRows>NULL</OtherRows>
+          <NumRows value="1" />
+          <Expression>([Row+1:Y] - Y) / ([Row+1:X] - X)</Expression>
+          <GroupByFields />
+        </Configuration>
+        <Annotation><AnnotationText>Forward slope, bare field names like the real ACE workflow</AnnotationText></Annotation>
+      </Properties>
+    </Node>
+    <Node ToolID="3">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.MultiRowFormula.MultiRowFormula" />
+      <Properties>
+        <Configuration>
+          <UpdateField value="False" />
+          <CreateField_Name>prev_slope</CreateField_Name>
+          <CreateField_Type>Double</CreateField_Type>
+          <OtherRows>0</OtherRows>
+          <NumRows value="1" />
+          <Expression>[Row-1:slope]</Expression>
+          <GroupByFields />
+        </Configuration>
+      </Properties>
+    </Node>
+    <Node ToolID="4">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.DbFileOutput.DbFileOutput" />
+      <Properties>
+        <Configuration><File FileFormat="0">slopes.csv</File></Configuration>
+      </Properties>
+    </Node>
+    <Node ToolID="5">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.DbFileInput.DbFileInput" />
+      <Properties>
+        <Configuration><File FileFormat="25">inputs\sales.csv</File></Configuration>
+      </Properties>
+    </Node>
+    <Node ToolID="6">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.MultiRowFormula.MultiRowFormula" />
+      <Properties>
+        <Configuration>
+          <UpdateField value="False" />
+          <CreateField_Name>prev</CreateField_Name>
+          <CreateField_Type>Double</CreateField_Type>
+          <OtherRows>NULL</OtherRows>
+          <NumRows value="1" />
+          <Expression>[Row-1:V]</Expression>
+          <GroupByFields>
+            <Field field="G" />
+          </GroupByFields>
+        </Configuration>
+        <Annotation><AnnotationText>Previous value within each group</AnnotationText></Annotation>
+      </Properties>
+    </Node>
+    <Node ToolID="7">
+      <GuiSettings Plugin="AlteryxBasePluginsGui.DbFileOutput.DbFileOutput" />
+      <Properties>
+        <Configuration><File FileFormat="0">lagged.csv</File></Configuration>
+      </Properties>
+    </Node>
+  </Nodes>
+  <Connections>
+    <Connection>
+      <Origin ToolID="1" Connection="Output" />
+      <Destination ToolID="2" Connection="Input" />
+    </Connection>
+    <Connection>
+      <Origin ToolID="2" Connection="Output" />
+      <Destination ToolID="3" Connection="Input" />
+    </Connection>
+    <Connection>
+      <Origin ToolID="3" Connection="Output" />
+      <Destination ToolID="4" Connection="Input" />
+    </Connection>
+    <Connection>
+      <Origin ToolID="5" Connection="Output" />
+      <Destination ToolID="6" Connection="Input" />
+    </Connection>
+    <Connection>
+      <Origin ToolID="6" Connection="Output" />
+      <Destination ToolID="7" Connection="Input" />
+    </Connection>
+  </Connections>
+</AlteryxDocument>

@@ -38,6 +38,8 @@ EVALUATED = [
     # arithmetic + comparison + precedence
     ("[Score] + [Bonus]", [100.0, 47.0, None, 50.0]),
     ("[Score] * 2 - 10", [170.0, 74.0, None, 90.0]),
+    ("([Score] - [Bonus]) * 2", [160.0, 74.0, None, 100.0]),  # source parens must survive emission
+    ("[Score] - ([Bonus] - 5)", [85.0, 42.0, None, 55.0]),  # equal-precedence right operand
     ("[Score] > 50", [True, False, False, False]),
     ("[Score] >= 50 AND [Bonus] > 0", [True, False, False, False]),
     ("[Score] > 80 OR [Bonus] > 4", [True, True, False, False]),
@@ -160,7 +162,7 @@ UNSUPPORTED = [
     "[A] +",  # syntax error
     "Switch([A], 'x', 1, 2)",  # tier-3, deliberately absent until a real workflow needs it
     "DateTimeAdd([A], 1, 'months')",  # calendar arithmetic refused, not guessed
-    "bareword",  # field without brackets
+    "[A] ~ 2",  # unrecognized operator
     "",  # empty
     "Contains([A])",  # wrong arity
 ]
